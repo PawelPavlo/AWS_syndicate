@@ -12,9 +12,14 @@ class HelloWorld(AbstractLambda):
     def handle_request(self, event, context):
         """
         Explain incoming event here
+    
         """
+        response = {
+            'statusCode':200,
+            'message':'Hello from Lambda'
+        }
         # todo implement business logic
-        return 200
+        return response
     
 
 HANDLER = HelloWorld()
