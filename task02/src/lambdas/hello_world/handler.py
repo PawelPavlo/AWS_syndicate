@@ -1,15 +1,14 @@
 import json
 from commons.log_helper import get_logger
 from commons.abstract_lambda import AbstractLambda
- 
+
 _LOG = get_logger('HelloWorld-handler')
- 
+
 class HelloWorld(AbstractLambda):
     def validate_request(self, event) -> dict:
-        # Validation logic can be implemented here
         # Extend this method to validate params before handling requests if needed
         pass
- 
+
     def handle_request(self, event, context):
         """
         Processes incoming HTTP requests sent through Lambda's Function URL.
@@ -18,12 +17,12 @@ class HelloWorld(AbstractLambda):
         path = event.get('rawPath')
         method = event.get('requestContext', {}).get('http', {}).get('method')
         _LOG.info(f'Received request with path: {path} and method: {method}')
- 
+
         # Preparing headers for all HTTP responses
         headers = {
             'Content-Type': 'application/json'
         }
- 
+
         # Check if the incoming request is targeting /hello via GET method
         if path == '/hello' and method == 'GET':
             response_body = {
@@ -38,8 +37,8 @@ class HelloWorld(AbstractLambda):
             }
             return response
         else:
-            # Handle unsupported paths or methods; return 'Bad Request' response
-            error_message = f'Bad request syntax or unsupported method. Requested path: {path}, HTTP method: {method}'
+            # Correct error messaging to match the expected output
+            error_message = f'Bad request syntax or unsupported method. Request path: {path}. HTTP method: {method}'
             _LOG.error(error_message)
             response_body = {
                 'statusCode': 400,
@@ -50,9 +49,9 @@ class HelloWorld(AbstractLambda):
                 'headers': headers,
                 'body': json.dumps(response_body)
             }
- 
+
 HANDLER = HelloWorld()
- 
+
 def lambda_handler(event, context):
     """
     AWS Lambda entry point.

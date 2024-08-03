@@ -48,7 +48,7 @@ class TestHelloWorldLambda(HelloWorldLambdaTestCase):
             },
             'body': json.dumps({
                 'statusCode': 400,
-                'message': 'Bad request syntax or unsupported method. Requested path: /unknown, HTTP method: GET'
+                'message': 'Bad request syntax or unsupported method. Request path: /unknown. HTTP method: GET'
             })
         }
 
@@ -74,7 +74,7 @@ class TestHelloWorldLambda(HelloWorldLambdaTestCase):
             },
             'body': json.dumps({
                 'statusCode': 400,
-                'message': 'Bad request syntax or unsupported method. Requested path: /hello, HTTP method: POST'
+                'message': 'Bad request syntax or unsupported method. Request path: /hello. HTTP method: POST'
             })
         }
 
