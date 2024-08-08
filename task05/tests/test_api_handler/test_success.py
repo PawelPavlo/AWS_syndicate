@@ -6,11 +6,17 @@ class TestSuccess(ApiHandlerLambdaTestCase):
 
     @patch("boto3.resource")
     def test_success(self, mock_resource):
+#       self.event = {
+#            "body": json.dumps({
+#                "principalId": 1,
+#                "content": {"name": "John", "surname": "Doe"}
+#            })
+#        }
         self.event = {
-            "body": json.dumps({
+            
                 "principalId": 1,
                 "content": {"name": "John", "surname": "Doe"}
-            })
+            
         }
         self.context = {}
         print(self.event)
