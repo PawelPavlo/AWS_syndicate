@@ -33,34 +33,25 @@ class ApiHandler(AbstractLambda):
 
         now = datetime.datetime.now()
         iso_format = now.isoformat()
-
+        item = {
+            "id": str(uuid.uuid4()),
+            "principalId": event['principalId'],
+            "createdAt": iso_format,
+            "body": event['content']
+        }
         try:
-            item = {
-                "id": str(uuid.uuid4()),
-                "principalId": event['principalId'],
-                "createdAt": iso_format,
-                "body": event['content']
-            }
+            response = table.put_item(Item=item)
+            _LOG.info(f'DynamoDB put_item response: {response}')
         except Exception as error:
-            _LOG.warning(error)
-            body = event['body']
-            data = json.loads(body)
-            _LOG.info(f'body: {body}')
-            _LOG.info(f'data: {data}')
-
-            item = {
-                "id": str(uuid.uuid4()),
-                "principalId": data['principalId'],
-                "createdAt": iso_format,
-                "body": data
+            _LOG.error(error)
+            return {
+                "statusCode": 501,
+                "event": event
             }
-            event = data
 
-        response = table.put_item(Item=item)
-        _LOG.info(f'DynamoDB put_item response: {response}')
         return {
             "statusCode": 201,
-            "event": event,
+            "event": event
         }
 
 

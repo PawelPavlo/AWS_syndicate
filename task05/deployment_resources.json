@@ -43,8 +43,7 @@
           "default_error_pattern": true
         }
       }
-    },
-    "minimum_compression_size": 0
+    }
   },
   "Events": {
     "resource_type": "dynamodb_table",
