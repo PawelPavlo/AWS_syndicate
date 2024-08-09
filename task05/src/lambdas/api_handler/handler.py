@@ -1,12 +1,10 @@
-import datetime
-import json
-import os
-import uuid
-
-import boto3
-
 from commons.log_helper import get_logger
 from commons.abstract_lambda import AbstractLambda
+import boto3
+import uuid
+import json
+from datetime import datetime
+
 
 _LOG = get_logger('ApiHandler-handler')
 
@@ -20,49 +18,26 @@ class ApiHandler(AbstractLambda):
         """
         Explain incoming event here
         """
-        _LOG.info(f'Event: {event}')
+        # todo implement business logic
+        _LOG.info(event)
+        db = boto3.resource("dynamodb")
+        table_name = "cmtr-b5eedb66-Events-test"
+        _LOG.info(f"table name: {table_name}")
+        table = db.Table(table_name)
 
-        # Create a DynamoDB resource object
-        dynamodb = boto3.resource('dynamodb')
-
-        # Get the DynamoDB table
-        # table = dynamodb.Table('Events')
-        table_name = os.environ.get('target_table')
-        _LOG.info(f'target_table: {table_name}')
-        table = dynamodb.Table(table_name)
-
-        now = datetime.datetime.now()
-        iso_format = now.isoformat()
-
-        try:
-            item = {
-                "id": str(uuid.uuid4()),
-                "principalId": event['principalId'],
-                "createdAt": iso_format,
-                "body": event['content']
-            }
-        except Exception as error:
-            _LOG.warning(error)
-            body = event['body']
-            data = json.loads(body)
-            _LOG.info(f'body: {body}')
-            _LOG.info(f'data: {data}')
-
-            item = {
-                "id": str(uuid.uuid4()),
-                "principalId": data['principalId'],
-                "createdAt": iso_format,
-                "body": data
-            }
-            event = data
-
-        response = table.put_item(Item=item)
-        _LOG.info(f'DynamoDB put_item response: {response}')
+        now = datetime.now().isoformat()
+        _LOG.info("Inserting...")
+        obj = {
+            "id": str(uuid.uuid4()),
+            "principalId": event["principalId"],
+            "createdAt": now,
+            "body": event
+        }
+        table.put_item(Item=obj)
         return {
             "statusCode": 201,
-            "event": event,
+            "event": obj,
         }
-
 
 HANDLER = ApiHandler()
 
