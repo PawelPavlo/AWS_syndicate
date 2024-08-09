@@ -26,4 +26,3 @@ class TestSuccess(ApiHandlerLambdaTestCase):
         response = self.HANDLER.handle_request(self.event, self.context)
 
         self.assertEqual(response["statusCode"], 201)
-        

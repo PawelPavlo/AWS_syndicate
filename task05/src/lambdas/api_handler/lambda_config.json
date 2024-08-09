@@ -7,14 +7,12 @@
   "runtime": "python3.10",
   "memory": 128,
   "timeout": 100,
-  "lambda_path": "lambdas\\api_handler",
+  "lambda_path": "lambdas/api_handler",
   "dependencies": [],
   "event_sources": [],
   "env_variables": {
-    "region": "${region}",
-    "TARGET_TABLE": "${resources_prefix}Events"
+    "target_table": "${target_table}"
   },
-  "publish_version": false,
   "url_config": {},
   "ephemeral_storage": 512,
   "logs_expiration": "${logs_expiration}"
