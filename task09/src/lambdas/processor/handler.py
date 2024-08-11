@@ -1,44 +1,17 @@
-import decimal
 import json
+import os
 import uuid
+import boto3
+from decimal import Decimal
 
 import requests
-import boto3
-from aws_xray_sdk.core import xray_recorder
-from aws_xray_sdk.core import patch_all
 
 from commons.log_helper import get_logger
 from commons.abstract_lambda import AbstractLambda
 
 _LOG = get_logger('Processor-handler')
-patch_all()
 
-class OpenMeteoAPI:
-
-    def __init__(self) -> None:
-        self.url = "https://api.open-meteo.com/v1/forecast"
-
-    def get_weather_forecast(self, latitude: float, longitude: float) -> dict: 
-        
-        response = requests.get(
-            url=self.url,
-            params={
-                "latitude": latitude,
-                "longitude": longitude,
-                "hourly": "temperature_2m"
-            }
-        )
-        response.raise_for_status()
-        forecast = response.json()
-        return forecast
-
-
-open_meteo_api = OpenMeteoAPI()
-PREFIX = "cmtr-b5eedb66-"
-SUFFIX = "-test"
-TABLE_NAME = f"{PREFIX}Weather{SUFFIX}"
-weather_table = boto3.resource("dynamodb").Table(TABLE_NAME)
-
+dynamodb = boto3.resource('dynamodb')
 
 class Processor(AbstractLambda):
 
@@ -46,46 +19,76 @@ class Processor(AbstractLambda):
         pass
         
     def handle_request(self, event, context):
+        """
+        Explain incoming event here
+        """
+        _LOG.info(event)
 
-        try:
-            forecast = open_meteo_api.get_weather_forecast(latitude=52.52, longitude=13.41)
-        except Exception as e:
-            _LOG.error(f"Failed to get weather forecast: {e}")
-            return {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Failed to get weather forecast"})
+        # todo implement business logic
+        # if "rawPath" in event and event["rawPath"] == "/weather":
+        if "rawPath" in event and (event["rawPath"] in ["/weather", "/"]) :
+            response = requests.get("https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m")
+            # weather = response.json(parse_float=Decimal)
+            weather = response.json()
+            res = {
+                    "headers": {
+                        "Content-Type": "application/json"
+                        },
+                    "statusCode": 200,
+                    "body": weather
+                    }
+            record = {}
+            # {
+            #   "id": str, // uuidv4
+            #   "forecast": {
+            #      "elevation": number,
+            #      "generationtime_ms": number,
+            #      "hourly": {
+            #          "temperature_2m": [number],
+            #          "time": [str]
+            #       },
+            #       "hourly_units": {
+            #          "temperature_2m": str,
+            #          "time": str
+            #       },
+            #       "latitude": number,
+            #       "longitude": number,
+            #       "timezone": str,
+            #       "timezone_abbreviation": str,
+            #       "utc_offset_seconds": number
+            #   }
+            # }
+            forecast = {
+                "elevation": weather['elevation'],
+                "generationtime_ms": weather['generationtime_ms'],
+                "hourly": {
+                    "temperature_2m": weather['hourly']['temperature_2m'],
+                    "time": weather['hourly']['time']
+                },
+                "hourly_units": {
+                    "temperature_2m":  weather['hourly_units']['temperature_2m'],
+                    "time": weather['hourly_units']['time']
+                },
+                "latitude": weather['latitude'],
+                "longitude": weather['longitude'],
+                "timezone": weather['timezone'],
+                "timezone_abbreviation": weather['timezone_abbreviation'],
+                "utc_offset_seconds": weather['utc_offset_seconds']
             }
+            record["id"] = str(uuid.uuid4())
+            record["forecast"] = forecast
+            _LOG.info(record)
+            _LOG.info(forecast)
 
-        try:
-            item = {
-                "id": str(uuid.uuid4()),
-                "forecast": {
-                    "elevation" : decimal.Decimal(str(forecast["elevation"])),
-                    "generationtime_ms" : decimal.Decimal(str(forecast["generationtime_ms"])),
-                    "hourly": {
-                        "temperature_2m": [decimal.Decimal(str(temp)) for temp in forecast["hourly"]["temperature_2m"]],
-                        "time": forecast["hourly"]["time"]
-                    },
-                    "hourly_units": forecast["hourly_units"],
-                    "latitude" : decimal.Decimal(str(forecast["latitude"])),
-                    "longitude" : decimal.Decimal(str(forecast["longitude"])),
-                    "timezone" : forecast["timezone"],
-                    "timezone_abbreviation" : forecast["timezone_abbreviation"],
-                    "utc_offset_seconds" : decimal.Decimal(str(forecast["utc_offset_seconds"])),
-                }
-            }
-            weather_table.put_item(Item=item)
-        except Exception as e:
-            _LOG.error(f"Failed to save forecast to DynamoDB: {e}")
-            return {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Failed to save forecast to DynamoDB"})
-            }
+            item = json.loads(json.dumps(record), parse_float=Decimal)
 
-        return {
-            "statusCode": 200,
-            "body": json.dumps(forecast)
-        }
+            table_name = os.environ['TARGET_TABLE']
+            _LOG.info(f"{table_name=}")
+            table = dynamodb.Table(table_name)
+            table.put_item(Item=item)
+
+            return res
+        return 200
     
 
 HANDLER = Processor()

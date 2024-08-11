@@ -10,12 +10,14 @@
   "lambda_path": "lambdas/processor",
   "dependencies": [],
   "event_sources": [],
-  "env_variables": {},
+  "env_variables": {
+    "TARGET_TABLE": "${target_table}"
+  },
   "publish_version": false,
   "url_config": {
     "auth_type": "NONE"
   },
   "ephemeral_storage": 512,
-  "logs_expiration": "${logs_expiration}",
-  "tracing_mode": "Active"
+  "tracing_mode": "Active",
+  "logs_expiration": "${logs_expiration}"
 }
