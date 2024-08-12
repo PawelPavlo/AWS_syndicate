@@ -16,6 +16,7 @@
             "ssm:PutParameter",
             "ssm:GetParameter",
             "kms:Decrypt",
+            "cognito-idp:*",
             "cognito-idp:ListUserPools",
             "cognito-idp:AdminCreateUser",
             "cognito-idp:ListUserPoolClients",
@@ -61,7 +62,7 @@
     "username_attributes": [],
     "custom_attributes": [],
     "client": {
-      "client_name": "my_client_app",
+      "client_name": "client_app",
       "generate_secret": false,
       "explicit_auth_flows": [
         "ALLOW_ADMIN_USER_PASSWORD_AUTH",
