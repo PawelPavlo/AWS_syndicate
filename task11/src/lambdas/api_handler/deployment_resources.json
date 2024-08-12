@@ -5,6 +5,7 @@
     "custom_policies": [
       "lambda-basic-execution"
     ],
-    "resource_type": "iam_role"
+    "resource_type": "iam_role",
+    "allowed_accounts": ["${account_id}"]
   }
 }
