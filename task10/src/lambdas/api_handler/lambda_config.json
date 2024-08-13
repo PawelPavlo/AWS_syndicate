@@ -7,13 +7,14 @@
   "runtime": "python3.10",
   "memory": 128,
   "timeout": 100,
-  "lambda_path": "lambdas\\api_handler",
+  "lambda_path": "lambdas/api_handler",
   "dependencies": [],
   "event_sources": [],
   "env_variables": {
-    "TABLES_TABLE": "${tables_table}",
-    "RESERVATION_TABLE": "${reservations_table}",
+    "RESERVATIONS": "${reservations_table}",
+    "TABLES": "${tables_table}",
     "USER_POOL": "${booking_userpool}"
+
   },
   "publish_version": false,
   "url_config": {},

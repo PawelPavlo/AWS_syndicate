@@ -1,4 +1,3 @@
-
 {
   "lambda-basic-execution": {
     "policy_content": {
@@ -17,9 +16,16 @@
             "ssm:PutParameter",
             "ssm:GetParameter",
             "kms:Decrypt",
-            "cognito-idp:ListUserPools",
+            "cognito-idp:DescribeUserPool",
+            "cognito-idp:GetUser",
+            "cognito-idp:ListUsers",
             "cognito-idp:AdminCreateUser",
+            "cognito-idp:AdminInitiateAuth",
+            "cognito-idp:GetIdentityProviderByIdentifier",
+            "cognito-idp:ListUserPools",
             "cognito-idp:ListUserPoolClients",
+            "cognito-idp:AdminRespondToAuthChallenge",
+            "cognito-idp:AdminConfirmSignUp",
             "cognito-idp:AdminSetUserPassword"
           ],
           "Effect": "Allow",
@@ -30,28 +36,10 @@
     },
     "resource_type": "iam_policy"
   },
-  "Tables": {
-    "resource_type": "dynamodb_table",
-    "hash_key_name": "id",
-    "hash_key_type": "N",
-    "read_capacity": 1,
-    "write_capacity": 1,
-    "global_indexes": [],
-    "autoscaling": []
-  },
-  "Reservations": {
-    "resource_type": "dynamodb_table",
-    "hash_key_name": "id",
-    "hash_key_type": "S",
-    "read_capacity": 1,
-    "write_capacity": 1,
-    "global_indexes": [],
-    "autoscaling": []
-  },
   "simple-booking-userpool": {
     "resource_type": "cognito_idp",
     "password_policy": {
-      "minimum_length": 8,
+      "minimum_length": 12,
       "require_uppercase": true,
       "require_symbols": true,
       "require_lowercase": true,
@@ -62,7 +50,7 @@
     "username_attributes": [],
     "custom_attributes": [],
     "client": {
-      "client_name": "my_client_app",
+      "client_name": "client-app",
       "generate_secret": false,
       "explicit_auth_flows": [
         "ALLOW_ADMIN_USER_PASSWORD_AUTH",
@@ -114,9 +102,9 @@
         }
       },
       "/tables": {
-        "enable_cors": true,
-        "POST": {
-          "authorization_type": "task10-authorizer",
+        "enable_cors": false,
+        "GET": {
+          "authorization_type": "task10_api_authorizer",
           "integration_type": "lambda",
           "lambda_name": "api_handler",
           "enable_proxy": true,
@@ -127,12 +115,12 @@
           "integration_responses": [],
           "default_error_pattern": true
         },
-        "GET": {
-          "authorization_type": "task10-authorizer",
+        "POST": {
+          "authorization_type": "task10_api_authorizer",
           "integration_type": "lambda",
           "lambda_name": "api_handler",
-          "enable_proxy": true,
           "api_key_required": false,
+          "enable_proxy": true,
           "method_request_parameters": {},
           "integration_request_body_template": {},
           "responses": [],
@@ -141,9 +129,9 @@
         }
       },
       "/reservations": {
-        "enable_cors": true,
+        "enable_cors": false,
         "POST": {
-          "authorization_type": "task10-authorizer",
+          "authorization_type": "task10_api_authorizer",
           "integration_type": "lambda",
           "lambda_name": "api_handler",
           "enable_proxy": true,
@@ -155,7 +143,7 @@
           "default_error_pattern": true
         },
         "GET": {
-          "authorization_type": "task10-authorizer",
+          "authorization_type": "task10_api_authorizer",
           "integration_type": "lambda",
           "lambda_name": "api_handler",
           "enable_proxy": true,
@@ -170,7 +158,7 @@
       "/tables/{tableId}": {
         "enable_cors": false,
         "GET": {
-          "authorization_type": "task10-authorizer",
+          "authorization_type": "task10_api_authorizer",
           "integration_type": "lambda",
           "lambda_name": "api_handler",
           "enable_proxy": true,
@@ -184,14 +172,32 @@
       }
     },
     "authorizers": {
-      "task10-authorizer": {
+      "task10_api_authorizer": {
         "type": "COGNITO_USER_POOLS",
         "identity_source": "method.request.header.Authorization",
         "ttl": 300,
         "user_pools": [
-          "${booking_userpool}"
+          "simple-booking-userpool"
         ]
       }
     }
+  },
+  "Tables": {
+    "resource_type": "dynamodb_table",
+    "hash_key_name": "id",
+    "hash_key_type": "N",
+    "read_capacity": 1,
+    "write_capacity": 1,
+    "global_indexes": [],
+    "autoscaling": []
+  },
+  "Reservations": {
+    "resource_type": "dynamodb_table",
+    "hash_key_name": "id",
+    "hash_key_type": "S",
+    "read_capacity": 1,
+    "write_capacity": 1,
+    "global_indexes": [],
+    "autoscaling": []
   }
 }
